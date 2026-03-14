@@ -10,3 +10,9 @@ backend/whatsapp/.session
 
 frontend/dist
 frontend/dist-ssr
+
+_build/
+!cmake/**/user.cmake
+cmake/**/.generated/*
+cmake/**/CMake*
+out/

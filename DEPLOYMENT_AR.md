@@ -46,8 +46,20 @@
 ## 3) نشر الـ Frontend على Vercel
 1) Vercel → New Project → Import repo
 2) اختر Root Directory: `frontend`
-3) أضف Environment Variable في Vercel:
-   - `VITE_API_BASE_URL` = رابط Render مثل `https://<render-service-url>`
+3) عندك خيارين لربط الـ API:
+
+### الخيار A (مباشر من المتصفح إلى Render)
+- أضف Environment Variable في Vercel:
+  - `VITE_API_BASE_URL` = رابط Render مثل `https://<render-service-url>`
+
+### الخيار B (Proxy على Vercel: المتصفح ينادي Vercel فقط)
+- لا تضف `VITE_API_BASE_URL` (اتركه فارغ).
+- أضف Environment Variable في Vercel:
+  - `BACKEND_URL` = رابط Render مثل `https://<render-service-url>`
+- المتصفح سيستدعي `/api/...` على نفس دومين Vercel، وVercel سيعمل proxy إلى Render.
+
+ملاحظة مهمة:
+- Stripe webhook لا يمر عبر Vercel proxy بسبب توقيع Stripe. لازم webhook يضرب Render مباشرة.
 4) Deploy
 
 ## 4) إعداد CORS بشكل صحيح
@@ -63,4 +75,3 @@
 - `UPLOADS_DIR=/app/backend/uploads`
 - `WHATSAPP_SESSION_PATH=/app/backend/uploads/wa_sessions`
 وهذا المسار مربوط بـ Disk دائم داخل Render.
-
