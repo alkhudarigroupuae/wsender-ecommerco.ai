@@ -13,8 +13,8 @@ This repo contains:
 
 ### 2) Clone and install
 ```bash
-git clone https://github.com/alkhudarigroupuae/whatsapp-sender.git
-cd whatsapp-sender
+git clone https://github.com/ecommerco/ecommerco-wsender.git
+cd ecommerco-wsender
 cd backend && npm ci
 cd ../frontend && npm ci && npm run build
 ```
@@ -27,11 +27,13 @@ Required:
 - `PORT=4000`
 - `DATABASE_URL=postgresql://...` (Supabase or local Postgres)
 - `JWT_SECRET=...`
+- `ADMIN_EMAILS=you@domain.com` (comma-separated, admin-only access)
 - `FRONTEND_ORIGIN=https://YOUR_DOMAIN` (or your frontend domain)
 - `APP_BASE_URL=https://YOUR_DOMAIN`
 - `FREE_MONTHLY_LIMIT=200`
 - `PRO_MONTHLY_LIMIT=5000`
 - `MAX_MESSAGES_PER_HOUR=50`
+- `MAX_MESSAGES_PER_MINUTE=5` (optional, 0 disables)
 - `MIN_DELAY_SECONDS=20`
 - `MAX_DELAY_SECONDS=90`
 - `MAX_RETRIES=3`
@@ -54,6 +56,8 @@ Optional:
 - AI:
   - `AI_PROVIDER=openai` or `gemini`
   - `OPENAI_API_KEY=...` or `GEMINI_API_KEY=...`
+  - `OPENAI_MODEL=gpt-4o-mini` (optional)
+  - `GEMINI_MODEL=gemini-1.5-flash` (optional)
 - Stripe:
   - `STRIPE_SECRET_KEY=...`
   - `STRIPE_WEBHOOK_SECRET=...`

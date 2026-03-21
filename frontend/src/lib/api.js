@@ -29,7 +29,17 @@ export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
 
   const res = await fetch(resolveApiUrl(path), init)
   const text = await res.text()
-  const data = text ? JSON.parse(text) : null
+  let data = null
+  if (text) {
+    try {
+      data = JSON.parse(text)
+    } catch {
+      const err = new Error('API returned HTML instead of JSON. Check VITE_API_BASE_URL and backend route.')
+      err.status = res.status
+      err.data = text.slice(0, 200)
+      throw err
+    }
+  }
 
   if (!res.ok) {
     const message = data?.error || `Request failed: ${res.status}`

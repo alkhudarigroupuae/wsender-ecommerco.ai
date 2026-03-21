@@ -51,11 +51,11 @@ function pickToneVariant() {
   return pickOne(tones);
 }
 
-async function generatePersonalizedMessage({ contact, campaignDescription }) {
+async function generatePersonalizedMessage({ contact, campaignDescription, aiProvider }) {
   const tone = pickToneVariant();
   const prompt = buildPrompt({ contact, campaignDescription, tone });
 
-  const content = await generateText({ prompt, temperature: 0.9 });
+  const content = await generateText({ prompt, temperature: 0.9, provider: aiProvider });
   const cleaned = postProcessMessage(content);
   const withEmoji = maybeAddEmoji(cleaned);
 
@@ -71,9 +71,11 @@ async function generatePersonalizedMessage({ contact, campaignDescription }) {
   return withEmoji;
 }
 
-function generateRandomDelayMs() {
+function generateRandomDelayMs({ minDelaySeconds, maxDelaySeconds } = {}) {
   const cfg = getAppConfig();
-  return randomInt(cfg.minDelaySeconds, cfg.maxDelaySeconds) * 1000;
+  const min = Number.isFinite(Number(minDelaySeconds)) ? Number(minDelaySeconds) : cfg.minDelaySeconds;
+  const max = Number.isFinite(Number(maxDelaySeconds)) ? Number(maxDelaySeconds) : cfg.maxDelaySeconds;
+  return randomInt(min, max) * 1000;
 }
 
 module.exports = { generatePersonalizedMessage, generateRandomDelayMs };

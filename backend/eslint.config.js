@@ -2,6 +2,9 @@ const js = require("@eslint/js");
 const globals = require("globals");
 
 module.exports = [
+  {
+    ignores: ["whatsapp/.session/**", "whatsapp/**/.session/**", "uploads/**", "node_modules/**"],
+  },
   js.configs.recommended,
   {
     languageOptions: {

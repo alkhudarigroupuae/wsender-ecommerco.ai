@@ -82,6 +82,7 @@ async function fetchAndLockNextJob({ now, lockTimeoutMs }) {
 }
 
 async function unlockStuckJobs({ now, lockTimeoutMs }) {
+  const cutoff = new Date(new Date(now).getTime() - Number(lockTimeoutMs || 0));
   await query(
     `update send_jobs
      set status = 'pending',
@@ -89,8 +90,8 @@ async function unlockStuckJobs({ now, lockTimeoutMs }) {
          updated_at = now()
      where status = 'processing'
        and locked_at is not null
-       and locked_at < ($1 - ($2::int * interval '1 millisecond'))`,
-    [now, lockTimeoutMs],
+       and locked_at < $1`,
+    [cutoff],
   );
 }
 

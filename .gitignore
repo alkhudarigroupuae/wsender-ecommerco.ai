@@ -1,9 +1,13 @@
 .DS_Store
+Untitled-*
+github_pat_*
 .env
 .env.*
 !.env.example
 
 node_modules
+.local-node
+.wwebjs_cache
 
 backend/uploads
 backend/whatsapp/.session

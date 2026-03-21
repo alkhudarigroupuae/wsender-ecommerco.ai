@@ -13,6 +13,7 @@ router.get("/config", (_req, res) => {
     },
     sending: {
       maxPerHour: cfg.maxMessagesPerHour,
+      maxPerMinute: cfg.maxMessagesPerMinute,
       minDelaySeconds: cfg.minDelaySeconds,
       maxDelaySeconds: cfg.maxDelaySeconds,
     },
@@ -20,4 +21,3 @@ router.get("/config", (_req, res) => {
 });
 
 module.exports = router;
-

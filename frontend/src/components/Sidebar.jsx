@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../lib/auth.jsx'
 
 function Icon({ name }) {
   if (name === 'home') {
@@ -51,6 +52,16 @@ function Icon({ name }) {
       </svg>
     )
   }
+  if (name === 'gear') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="nav-icon">
+        <path
+          fill="currentColor"
+          d="M19.4 13.5c.04-.5.04-1 0-1.5l2-1.6a.9.9 0 0 0 .2-1.1l-1.9-3.3a.9.9 0 0 0-1.1-.4l-2.4 1a8.4 8.4 0 0 0-1.3-.7l-.4-2.6a.9.9 0 0 0-.9-.8H9.4a.9.9 0 0 0-.9.8l-.4 2.6c-.5.2-.9.4-1.3.7l-2.4-1a.9.9 0 0 0-1.1.4L1.4 9.3a.9.9 0 0 0 .2 1.1l2 1.6c-.04.5-.04 1 0 1.5l-2 1.6a.9.9 0 0 0-.2 1.1l1.9 3.3c.2.4.7.6 1.1.4l2.4-1c.4.3.8.5 1.3.7l.4 2.6c.1.4.4.8.9.8h3.2c.4 0 .8-.3.9-.8l.4-2.6c.5-.2.9-.4 1.3-.7l2.4 1c.4.2.9 0 1.1-.4l1.9-3.3a.9.9 0 0 0-.2-1.1l-2-1.6zM11 15.8a3.8 3.8 0 1 1 0-7.6a3.8 3.8 0 0 1 0 7.6z"
+        />
+      </svg>
+    )
+  }
   return null
 }
 
@@ -69,6 +80,8 @@ function NavItem({ to, icon, label }) {
 }
 
 export function Sidebar() {
+  const { user } = useAuth()
+
   return (
     <div className="rail">
       <div className="brand">
@@ -89,6 +102,8 @@ export function Sidebar() {
         <NavItem to="/app/campaigns" icon="spark" label="Campaigns" />
         <NavItem to="/app/whatsapp" icon="wa" label="WhatsApp" />
         <NavItem to="/app/billing" icon="card" label="Billing" />
+        <NavItem to="/app/settings" icon="gear" label="Settings" />
+        {user?.isAdmin && <NavItem to="/app/admin" icon="gear" label="Admin" />}
       </nav>
 
       <div className="rail-foot">

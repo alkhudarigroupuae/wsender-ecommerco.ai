@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Button } from './Button.jsx'
 import { useAuth } from '../lib/auth.jsx'
+import { useTheme } from '../lib/theme.jsx'
 
 function MktLink({ to, children }) {
   return (
@@ -12,6 +13,7 @@ function MktLink({ to, children }) {
 
 export function MarketingLayout() {
   const { user } = useAuth()
+  const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="mkt">
@@ -36,6 +38,9 @@ export function MarketingLayout() {
           </nav>
 
           <div className="mkt-actions">
+            <Button type="button" onClick={toggleTheme} variant="ghost" size="sm">
+              {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            </Button>
             {user ? (
               <Button as={Link} to="/app" variant="primary" size="sm">
                 Dashboard
@@ -80,4 +85,3 @@ export function MarketingLayout() {
     </div>
   )
 }
-

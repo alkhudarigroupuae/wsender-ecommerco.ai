@@ -16,6 +16,7 @@ const {
   unlockStuckJobs,
 } = require("../db/sendJobs");
 const { getAppConfig } = require("./config");
+const { getEffectiveUserSettings } = require("./userSettings");
 
 let started = false;
 
@@ -102,7 +103,11 @@ async function workerLoop() {
       await Promise.all([increment(ownerUserId, sentAt), incrementSent(job.owner_user_id, sentAt, 1)]);
       await maybeUpdateCampaignStatus(job.campaign_id, job.owner_user_id);
 
-      const delayMs = generateRandomDelayMs();
+      const eff = await getEffectiveUserSettings(ownerUserId);
+      const delayMs = generateRandomDelayMs({
+        minDelaySeconds: eff.minDelaySeconds,
+        maxDelaySeconds: eff.maxDelaySeconds,
+      });
       await sleep(delayMs);
     } catch (err) {
       const attempt = Number(job.attempt_count || 0) + 1;

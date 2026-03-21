@@ -102,6 +102,63 @@ async function markLogFailed({ logId, ownerUserId, attemptCount, error }) {
   );
 }
 
+async function getCampaignReportSummary({ ownerUserId, campaignId }) {
+  const res = await query(
+    `select
+       count(*)::int as total,
+       count(distinct phone)::int as "uniqueNumbers",
+       sum(case when status = 'sent' then 1 else 0 end)::int as sent,
+       sum(case when status = 'failed' then 1 else 0 end)::int as failed,
+       sum(case when status = 'retrying' then 1 else 0 end)::int as retrying,
+       sum(case when status = 'queued' then 1 else 0 end)::int as queued,
+       min(created_at) as "firstLogAt",
+       max(created_at) as "lastLogAt",
+       max(sent_at) as "lastSentAt"
+     from message_logs
+     where owner_user_id = $1 and campaign_id = $2`,
+    [ownerUserId, campaignId],
+  );
+  return (
+    res.rows[0] || {
+      total: 0,
+      uniqueNumbers: 0,
+      sent: 0,
+      failed: 0,
+      retrying: 0,
+      queued: 0,
+      firstLogAt: null,
+      lastLogAt: null,
+      lastSentAt: null,
+    }
+  );
+}
+
+async function listCampaignReportRows({ ownerUserId, campaignId, limit }) {
+  const max = Math.min(Number(limit || 50000), 50000);
+  const res = await query(
+    `select
+       l.id as "_id",
+       l.phone,
+       c.name as "contactName",
+       c.company as "contactCompany",
+       l.status,
+       l.attempt_count as "attemptCount",
+       l.error,
+       l.sent_at as "sentAt",
+       l.created_at as "createdAt",
+       l.updated_at as "updatedAt",
+       l.message
+     from message_logs l
+     left join contacts c
+       on c.id = l.contact_id and c.owner_user_id = l.owner_user_id
+     where l.owner_user_id = $1 and l.campaign_id = $2
+     order by l.created_at asc
+     limit $3`,
+    [ownerUserId, campaignId, max],
+  );
+  return res.rows;
+}
+
 module.exports = {
   createMessageLog,
   listCampaignLogs,
@@ -109,4 +166,6 @@ module.exports = {
   updateLogAfterSend,
   markLogRetrying,
   markLogFailed,
+  getCampaignReportSummary,
+  listCampaignReportRows,
 };

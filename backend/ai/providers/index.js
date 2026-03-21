@@ -6,12 +6,12 @@ function getProvider() {
   return String(process.env.AI_PROVIDER || "openai").toLowerCase();
 }
 
-async function generateText({ prompt, temperature }) {
-  const provider = getProvider();
-  if (provider === "mock") {
+async function generateText({ prompt, temperature, provider }) {
+  const p = String(provider || getProvider()).toLowerCase();
+  if (p === "mock") {
     return generateMockText({ prompt, temperature });
   }
-  if (provider === "gemini") {
+  if (p === "gemini") {
     return generateGeminiText({ prompt, temperature });
   }
   return generateOpenAiText({ prompt, temperature });

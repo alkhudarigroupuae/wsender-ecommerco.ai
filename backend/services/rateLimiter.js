@@ -1,44 +1,59 @@
 const { getOrCreateRateLimitRow, incrementSent, resetWindow } = require("../db/rateLimits");
 const { getAppConfig } = require("./config");
+const { getEffectiveUserSettings } = require("./userSettings");
 
 const KEY = "whatsapp_sender";
-const WINDOW_MS = 60 * 60 * 1000;
 
 function buildKey(ownerUserId) {
   return `${KEY}:${ownerUserId}`;
 }
 
-async function getWaitMs(ownerUserId, now) {
-  const cfg = getAppConfig();
-  const key = buildKey(ownerUserId);
+async function getWaitMsForWindow({ key, now, windowMs, maxCount }) {
   const row = await getOrCreateRateLimitRow({ key, now });
   const windowStart = new Date(row.windowStart);
   const elapsed = now.getTime() - windowStart.getTime();
 
-  if (elapsed >= WINDOW_MS) {
+  if (elapsed >= windowMs) {
     await resetWindow({ key, now, sentCount: 0 });
     return 0;
   }
 
-  if (row.sentCount >= cfg.maxMessagesPerHour) {
-    return windowStart.getTime() + WINDOW_MS - now.getTime();
+  if (maxCount > 0 && row.sentCount >= maxCount) {
+    return windowStart.getTime() + windowMs - now.getTime();
   }
 
   return 0;
 }
 
-async function increment(ownerUserId, now) {
-  const key = buildKey(ownerUserId);
-  const row = await getOrCreateRateLimitRow({ key, now });
-  const windowStart = new Date(row.windowStart);
-  const elapsed = now.getTime() - windowStart.getTime();
+async function getWaitMs(ownerUserId, now) {
+  const cfg = getAppConfig();
+  const eff = await getEffectiveUserSettings(ownerUserId);
+  const base = buildKey(ownerUserId);
 
-  if (elapsed >= WINDOW_MS) {
-    await resetWindow({ key, now, sentCount: 1 });
-    return;
+  const minuteMax = eff.maxMessagesPerMinute || cfg.maxMessagesPerMinute || 0;
+  if (minuteMax > 0) {
+    const waitMinute = await getWaitMsForWindow({ key: `${base}:m`, now, windowMs: 60 * 1000, maxCount: minuteMax });
+    if (waitMinute > 0) return waitMinute;
   }
 
-  await incrementSent({ key });
+  const hourMax = eff.maxMessagesPerHour || cfg.maxMessagesPerHour;
+  return getWaitMsForWindow({ key: `${base}:h`, now, windowMs: 60 * 60 * 1000, maxCount: hourMax });
+}
+
+async function increment(ownerUserId, now) {
+  const base = buildKey(ownerUserId);
+  const keys = [`${base}:h`, `${base}:m`];
+  for (const key of keys) {
+    const row = await getOrCreateRateLimitRow({ key, now });
+    const windowStart = new Date(row.windowStart);
+    const windowMs = key.endsWith(":m") ? 60 * 1000 : 60 * 60 * 1000;
+    const elapsed = now.getTime() - windowStart.getTime();
+    if (elapsed >= windowMs) {
+      await resetWindow({ key, now, sentCount: 1 });
+    } else {
+      await incrementSent({ key });
+    }
+  }
 }
 
 module.exports = { getWaitMs, increment };

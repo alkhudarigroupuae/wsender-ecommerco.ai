@@ -12,10 +12,19 @@ function mustString(name) {
   return String(raw);
 }
 
+function optionalNumber(name, defaultValue) {
+  const raw = process.env[name];
+  if (raw == null || raw === "") return defaultValue;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) throw new Error(`Invalid ${name}`);
+  return n;
+}
+
 function getAppConfig() {
   const freeMonthlyLimit = mustNumber("FREE_MONTHLY_LIMIT");
   const proMonthlyLimit = mustNumber("PRO_MONTHLY_LIMIT");
   const maxMessagesPerHour = mustNumber("MAX_MESSAGES_PER_HOUR");
+  const maxMessagesPerMinute = optionalNumber("MAX_MESSAGES_PER_MINUTE", 0);
   const minDelaySeconds = mustNumber("MIN_DELAY_SECONDS");
   const maxDelaySeconds = mustNumber("MAX_DELAY_SECONDS");
   const maxRetries = mustNumber("MAX_RETRIES");
@@ -24,6 +33,7 @@ function getAppConfig() {
     freeMonthlyLimit,
     proMonthlyLimit,
     maxMessagesPerHour,
+    maxMessagesPerMinute,
     minDelaySeconds,
     maxDelaySeconds,
     maxRetries,
@@ -33,4 +43,3 @@ function getAppConfig() {
 }
 
 module.exports = { getAppConfig };
-

@@ -7,6 +7,8 @@ import { Campaigns } from './pages/Campaigns.jsx'
 import { CampaignDetail } from './pages/CampaignDetail.jsx'
 import { WhatsApp } from './pages/WhatsApp.jsx'
 import { Billing } from './pages/Billing.jsx'
+import { Settings } from './pages/Settings.jsx'
+import { Admin } from './pages/Admin.jsx'
 import { Landing } from './pages/Landing.jsx'
 import { About } from './pages/About.jsx'
 import { Contact } from './pages/Contact.jsx'
@@ -47,6 +49,8 @@ function App() {
         <Route path="campaigns/:id" element={<CampaignDetail />} />
         <Route path="whatsapp" element={<WhatsApp />} />
         <Route path="billing" element={<Billing />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="admin" element={<Admin />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

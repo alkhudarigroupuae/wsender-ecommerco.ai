@@ -18,6 +18,19 @@ Create a local `.env` (not committed) using `.env.example` as reference.
 For a local demo without OpenAI/Gemini keys, set:
 - `AI_PROVIDER=mock`
 
+## AI setup (per-contact messages)
+Messages are generated per contact when you start a campaign.
+
+Backend env options:
+- OpenAI:
+  - `AI_PROVIDER=openai`
+  - `OPENAI_API_KEY=...`
+  - `OPENAI_MODEL=gpt-4o-mini` (optional)
+- Gemini:
+  - `AI_PROVIDER=gemini`
+  - `GEMINI_API_KEY=...`
+  - `GEMINI_MODEL=gemini-1.5-flash` (optional)
+
 ### 3) Run migrations + start
 ```bash
 cd backend
@@ -43,3 +56,6 @@ npm run build
 ## VPS deployment
 See `DEPLOYMENT_VPS.md`.
 
+## Multi-tenant safety
+- Each user sees only their own contacts/campaigns (scoped by owner user ID).
+- Admin-only access can view all clients if `ADMIN_EMAILS` includes your email.

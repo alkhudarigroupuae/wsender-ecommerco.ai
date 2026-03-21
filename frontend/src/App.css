@@ -12,7 +12,7 @@
   top: 0;
   height: 100vh;
   border-right: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(15, 17, 22, 0.7), rgba(15, 17, 22, 0.35));
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
   backdrop-filter: blur(14px);
 }
 
@@ -27,7 +27,7 @@
   top: 0;
   z-index: 10;
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(15, 17, 22, 0.78), rgba(15, 17, 22, 0.45));
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
   backdrop-filter: blur(14px);
 }
 
@@ -71,10 +71,10 @@
 .link {
   color: var(--ink);
   text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 1px solid var(--line-2);
 }
 .link:hover {
-  border-bottom-color: rgba(255, 255, 255, 0.5);
+  border-bottom-color: var(--ink);
 }
 
 .rail {
@@ -156,7 +156,7 @@
 .nav-icon {
   width: 18px;
   height: 18px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-2);
 }
 
 .nav-label {
@@ -188,7 +188,7 @@
   transform: translateY(-1px);
 }
 .nav-item.is-active .nav-icon {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
 }
 
 .rail-foot {
@@ -253,7 +253,7 @@
   font-weight: 600;
 }
 .pill-ic {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-2);
   font-weight: 700;
 }
 .pill:hover {
@@ -349,6 +349,7 @@
 .badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 6px 10px;
   border-radius: 999px;
   font-size: 12px;
@@ -357,6 +358,17 @@
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.03);
   color: var(--ink);
+  text-align: center;
+  line-height: 1.15;
+  min-height: 28px;
+}
+
+@media (max-width: 520px) {
+  .badge {
+    padding: 6px 8px;
+    font-size: 11px;
+    min-height: 26px;
+  }
 }
 .badge-ok {
   border-color: rgba(51, 209, 122, 0.35);

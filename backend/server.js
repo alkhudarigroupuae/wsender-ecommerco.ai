@@ -16,6 +16,8 @@ const whatsappRoutes = require("./routes/whatsapp");
 const mediaRoutes = require("./routes/media");
 const contactRoutes = require("./routes/contact");
 const publicRoutes = require("./routes/public");
+const settingsRoutes = require("./routes/settings");
+const adminRoutes = require("./routes/admin");
 const { startQueueWorker } = require("./services/queueWorker");
 const { query } = require("./db/pool");
 const { getAppConfig } = require("./services/config");
@@ -64,6 +66,19 @@ async function main() {
   app.use("/api/campaigns", campaignsRoutes);
   app.use("/api/whatsapp", whatsappRoutes);
   app.use("/api/media", mediaRoutes);
+  app.use("/api/settings", settingsRoutes);
+  app.use("/api/admin", adminRoutes);
+
+  app.use((err, req, res, next) => {
+    if (!err) return next();
+    const status = Number(err.status || err.statusCode || 500);
+    const message = String(err.message || "Internal Server Error");
+    if (res.headersSent) return next(err);
+    if (String(req.path || "").startsWith("/api/")) {
+      return res.status(status).json({ error: message, code: err.code });
+    }
+    return res.status(status).send(message);
+  });
 
   await query("select 1");
   process.stdout.write("PostgreSQL: connected\n");

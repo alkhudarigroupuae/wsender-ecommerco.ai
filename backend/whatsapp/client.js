@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 
@@ -42,17 +43,37 @@ function parseBool(value, defaultValue) {
 function createClient(userId) {
   const safeUserId = sanitizeId(userId);
   const sessionBasePath = process.env.WHATSAPP_SESSION_PATH || path.join(__dirname, ".session");
-  const dataPath = path.join(sessionBasePath, safeUserId);
+  fs.mkdirSync(sessionBasePath, { recursive: true });
 
   const headless = parseBool(process.env.WHATSAPP_HEADLESS, true);
-  const executablePath = process.env.WHATSAPP_EXECUTABLE_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
+  let executablePath = process.env.WHATSAPP_EXECUTABLE_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
+  if (!executablePath) {
+    const candidates =
+      process.platform === "darwin"
+        ? ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"]
+        : [
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium-browser",
+            "/usr/bin/chromium",
+          ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) {
+        executablePath = p;
+        break;
+      }
+    }
+  }
 
   return new Client({
-    authStrategy: new LocalAuth({ clientId: safeUserId, dataPath }),
+    authStrategy: new LocalAuth({ clientId: safeUserId, dataPath: sessionBasePath }),
     puppeteer: {
       ...(executablePath ? { executablePath } : {}),
       headless,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args:
+        process.platform === "linux"
+          ? ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+          : [],
     },
   });
 }

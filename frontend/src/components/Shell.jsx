@@ -8,6 +8,8 @@ const TITLES = [
   { prefix: '/app/campaigns', title: 'Campaigns' },
   { prefix: '/app/whatsapp', title: 'WhatsApp' },
   { prefix: '/app/billing', title: 'Billing' },
+  { prefix: '/app/settings', title: 'Settings' },
+  { prefix: '/app/admin', title: 'Admin' },
   { prefix: '/app', title: 'Workspace' },
 ]
 

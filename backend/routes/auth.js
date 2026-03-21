@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 
 const { signAccessToken } = require("../services/authTokens");
 const { requireAuth } = require("../middleware/requireAuth");
+const { isAdminEmail } = require("../services/admin");
 const { createUser, findUserByEmail, toPublicUser } = require("../db/users");
 
 const router = express.Router();
@@ -23,7 +24,7 @@ router.post("/register", async (req, res) => {
   const user = await createUser({ email, name, passwordHash });
 
   const token = signAccessToken({ userId: user.id });
-  res.json({ token, user: toPublicUser(user) });
+  res.json({ token, user: { ...toPublicUser(user), isAdmin: isAdminEmail(user.email) } });
 });
 
 router.post("/login", async (req, res) => {
@@ -37,12 +38,12 @@ router.post("/login", async (req, res) => {
   if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
   const token = signAccessToken({ userId: user.id });
-  res.json({ token, user: toPublicUser(user) });
+  res.json({ token, user: { ...toPublicUser(user), isAdmin: isAdminEmail(user.email) } });
 });
 
 router.get("/me", requireAuth, async (req, res) => {
   const user = req.user;
-  res.json({ user: toPublicUser(user) });
+  res.json({ user: { ...toPublicUser(user), isAdmin: Boolean(req.isAdmin) } });
 });
 
 router.post("/logout", (_req, res) => {

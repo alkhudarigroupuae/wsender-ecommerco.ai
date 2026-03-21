@@ -6,9 +6,16 @@ const { generatePersonalizedMessage } = require("../ai/messageGenerator");
 const { promisePool } = require("../utils/promisePool");
 const { requireAuth } = require("../middleware/requireAuth");
 const { getRemaining, getMonthlyLimit } = require("../services/usageLimiter");
+const { getEffectiveUserSettings } = require("../services/userSettings");
 const { listCampaigns, getCampaign, createCampaign, setCampaignStatus } = require("../db/campaigns");
 const { listLatestContacts, listContacts } = require("../db/contacts");
-const { createMessageLog, listCampaignLogs, countCampaignLogsByStatus } = require("../db/messageLogs");
+const {
+  createMessageLog,
+  listCampaignLogs,
+  countCampaignLogsByStatus,
+  getCampaignReportSummary,
+  listCampaignReportRows,
+} = require("../db/messageLogs");
 const { createSendJob } = require("../db/sendJobs");
 
 const router = express.Router();
@@ -36,6 +43,15 @@ function mediaKindFromMime(mimeType) {
   if (mimeType.startsWith("video/")) return "video";
   if (mimeType === "application/pdf") return "pdf";
   return null;
+}
+
+function csvEscape(value) {
+  if (value == null) return "";
+  const s = String(value);
+  if (s.includes('"') || s.includes(",") || s.includes("\n") || s.includes("\r")) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
 }
 
 router.get("/", requireAuth, async (req, res) => {
@@ -92,11 +108,16 @@ router.post("/:id/preview", requireAuth, async (req, res) => {
   const campaign = await getCampaign({ id: req.params.id, ownerUserId });
   if (!campaign) return res.status(404).json({ error: "Not found" });
 
+  const eff = await getEffectiveUserSettings(ownerUserId);
   const count = Math.min(Number(req.body.count || 5), 10);
   const contacts = await listLatestContacts({ ownerUserId, limit: count });
 
   const previews = await promisePool(contacts, 3, async (contact) => {
-    const message = await generatePersonalizedMessage({ contact, campaignDescription: campaign.campaignDescription });
+    const message = await generatePersonalizedMessage({
+      contact,
+      campaignDescription: campaign.campaignDescription,
+      aiProvider: eff.aiProvider,
+    });
     return { contactId: contact._id, name: contact.name, phone: contact.phone, message };
   });
 
@@ -108,6 +129,7 @@ router.post("/:id/start", requireAuth, async (req, res) => {
   const campaign = await getCampaign({ id: req.params.id, ownerUserId });
   if (!campaign) return res.status(404).json({ error: "Not found" });
 
+  const eff = await getEffectiveUserSettings(ownerUserId);
   const { items: contacts } = await listContacts({ ownerUserId, limit: 5000, offset: 0 });
   if (!contacts.length) return res.status(400).json({ error: "No contacts found" });
 
@@ -129,7 +151,11 @@ router.post("/:id/start", requireAuth, async (req, res) => {
   const now = new Date();
 
   const created = await promisePool(contactsToSend, 3, async (contact) => {
-    const message = await generatePersonalizedMessage({ contact, campaignDescription: campaign.campaignDescription });
+    const message = await generatePersonalizedMessage({
+      contact,
+      campaignDescription: campaign.campaignDescription,
+      aiProvider: eff.aiProvider,
+    });
     const log = await createMessageLog({
       ownerUserId,
       campaignId: campaign._id,
@@ -177,6 +203,89 @@ router.get("/:id/stats", requireAuth, async (req, res) => {
 
   const stats = await countCampaignLogsByStatus({ ownerUserId, campaignId });
   res.json(stats);
+});
+
+router.get("/:id/report", requireAuth, async (req, res) => {
+  const ownerUserId = req.user.id;
+  const campaignId = req.params.id;
+  const campaign = await getCampaign({ id: campaignId, ownerUserId });
+  if (!campaign) return res.status(404).json({ error: "Not found" });
+
+  const summary = await getCampaignReportSummary({ ownerUserId, campaignId });
+  const delivered = (summary?.sent || 0) + (summary?.failed || 0);
+  const successRate = delivered > 0 ? Math.round(((summary?.sent || 0) / delivered) * 1000) / 10 : 0;
+
+  res.json({
+    campaign: {
+      id: campaign._id,
+      status: campaign.status,
+      idea: campaign.campaignIdea,
+      createdAt: campaign.createdAt,
+    },
+    summary: {
+      total: summary.total || 0,
+      uniqueNumbers: summary.uniqueNumbers || 0,
+      sent: summary.sent || 0,
+      failed: summary.failed || 0,
+      retrying: summary.retrying || 0,
+      queued: summary.queued || 0,
+      successRate,
+      firstLogAt: summary.firstLogAt || null,
+      lastLogAt: summary.lastLogAt || null,
+      lastSentAt: summary.lastSentAt || null,
+    },
+  });
+});
+
+router.get("/:id/report.csv", requireAuth, async (req, res) => {
+  const ownerUserId = req.user.id;
+  const campaignId = req.params.id;
+  const campaign = await getCampaign({ id: campaignId, ownerUserId });
+  if (!campaign) return res.status(404).json({ error: "Not found" });
+
+  const rows = await listCampaignReportRows({ ownerUserId, campaignId, limit: 50000 });
+
+  const header = [
+    "campaign_id",
+    "campaign_idea",
+    "phone",
+    "contact_name",
+    "company",
+    "status",
+    "attempts",
+    "sent_at",
+    "error",
+    "message",
+    "created_at",
+    "updated_at",
+  ];
+
+  const lines = [header.join(",")];
+  for (const r of rows) {
+    lines.push(
+      [
+        campaign._id,
+        campaign.campaignIdea,
+        r.phone,
+        r.contactName,
+        r.contactCompany,
+        r.status,
+        r.attemptCount,
+        r.sentAt ? new Date(r.sentAt).toISOString() : "",
+        r.error,
+        r.message,
+        r.createdAt ? new Date(r.createdAt).toISOString() : "",
+        r.updatedAt ? new Date(r.updatedAt).toISOString() : "",
+      ]
+        .map(csvEscape)
+        .join(","),
+    );
+  }
+
+  const filename = `campaign-${campaign._id}-report.csv`;
+  res.setHeader("content-type", "text/csv; charset=utf-8");
+  res.setHeader("content-disposition", `attachment; filename="${filename}"`);
+  res.send(`${lines.join("\n")}\n`);
 });
 
 module.exports = router;

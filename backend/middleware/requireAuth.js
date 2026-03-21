@@ -1,5 +1,6 @@
 const { verifyAccessToken } = require("../services/authTokens");
 const { findUserById } = require("../db/users");
+const { isAdminEmail } = require("../services/admin");
 
 async function requireAuth(req, res, next) {
   try {
@@ -16,6 +17,7 @@ async function requireAuth(req, res, next) {
     if (!user) return res.status(401).json({ error: "Unauthorized" });
 
     req.user = user;
+    req.isAdmin = isAdminEmail(user.email);
     return next();
   } catch {
     return res.status(401).json({ error: "Unauthorized" });
