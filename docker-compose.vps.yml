@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./.env
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+    volumes:
+      - app_uploads:/app/uploads
+      - app_sessions:/app/whatsapp/.session
+
+volumes:
+  app_uploads:
+  app_sessions:
+

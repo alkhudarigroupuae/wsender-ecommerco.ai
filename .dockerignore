@@ -1,0 +1,14 @@
+.git
+.gitignore
+.DS_Store
+.env
+.env.*
+node_modules
+frontend/node_modules
+frontend/dist
+backend/node_modules
+backend/uploads
+backend/whatsapp/.session
+.local-node
+.wwebjs_cache
+

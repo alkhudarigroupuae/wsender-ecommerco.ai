@@ -102,9 +102,31 @@ curl https://YOUR_DOMAIN/api/health
 ```
 
 ## Option B: Docker (single VPS)
-This repo includes a `Dockerfile` and `docker-compose.yml`.
+This repo includes:
+- `docker-compose.yml` (app + local Postgres)
+- `docker-compose.vps.yml` (app only, for managed Postgres like Supabase/Neon)
 
 If you use Supabase Postgres, you typically run only the app container and set `DATABASE_URL` to Supabase.
+
+### Docker on VPS (recommended with managed Postgres)
+1) Create `.env` on the VPS (do not commit):
+```bash
+nano /var/www/wsender/.env
+```
+
+2) Put backend env values in that file:
+- `DATABASE_URL=postgresql://...`
+- `JWT_SECRET=...`
+- `ADMIN_EMAILS=you@domain.com`
+- `FRONTEND_ORIGIN=https://YOUR_VERCEL_DOMAIN`
+- `APP_BASE_URL=https://YOUR_VERCEL_DOMAIN`
+- Limits + WhatsApp paths (optional)
+
+3) Start:
+```bash
+cd /var/www/wsender
+docker compose -f docker-compose.vps.yml up -d --build
+```
 
 ## Notes
 - Do not store any secrets in GitHub.
