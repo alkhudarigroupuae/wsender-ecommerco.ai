@@ -20,3 +20,6 @@ _build/
 cmake/**/.generated/*
 cmake/**/CMake*
 out/
+
+# Nested duplicate checkout (has its own .git); do not track
+wsender/
