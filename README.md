@@ -4,6 +4,10 @@ This repository contains:
 - `frontend/` (Vite/React UI)
 - `backend/` (Node/Express API + WhatsApp worker + PostgreSQL)
 
+## Run live (production)
+
+Step-by-step: **[RUN_LIVE.md](./RUN_LIVE.md)** (Vercel + Render + Supabase).
+
 ## Local run (recommended Node version)
 - Node 20 (see `.nvmrc`)
 
@@ -13,7 +17,7 @@ Use either:
 - Local Postgres
 
 ### 2) Backend env
-Create a local `.env` (not committed) using `.env.example` as reference.
+Create `backend/.env` (not committed) using `backend/.env.example` as reference.
 
 For a local demo without OpenAI/Gemini keys, set:
 - `AI_PROVIDER=mock`
@@ -40,6 +44,8 @@ npm run start
 ```
 
 ### 4) Frontend (dev)
+Optional: `cp frontend/.env.example frontend/.env.local` — leave `VITE_API_BASE_URL` empty to use the Vite proxy to port 4000.
+
 ```bash
 cd frontend
 npm ci

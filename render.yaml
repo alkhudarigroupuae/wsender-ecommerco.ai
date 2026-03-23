@@ -20,6 +20,8 @@ services:
         value: /app/backend/uploads/wa_sessions
       - key: DATABASE_URL
         sync: false
+      - key: PGSSLMODE
+        sync: false
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_ORIGIN
