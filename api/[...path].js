@@ -1,6 +1,7 @@
 /**
  * Vercel Serverless: proxy /api/* → BACKEND_URL/api/*
- * Duplicate of repo root api/[...path].js — used when Vercel Root Directory is `frontend`.
+ * Repo root deploy: use this file. If Vercel Root Directory is `frontend`, use frontend/api/[...path].js (duplicate).
+ * Set BACKEND_URL in Vercel — no trailing slash, no /api suffix. Leave VITE_API_BASE_URL unset for same-origin /api.
  */
 export default async function handler(req, res) {
   const backendUrl = process.env.BACKEND_URL

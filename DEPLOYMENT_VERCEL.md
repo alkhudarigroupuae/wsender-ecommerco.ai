@@ -7,16 +7,21 @@ This project needs:
 
 ## 1) Deploy frontend on Vercel
 1) Vercel → New Project → Import GitHub repo
-2) Root Directory: `frontend`
-3) Build Command: `npm run build` (Vercel usually detects this)
-4) Output Directory: `dist`
+2) You can leave **Root Directory** empty (repo root). Root `vercel.json` builds `frontend/` and deploys `/api` proxy from `api/[...path].js`.
+3) Or set Root Directory to `frontend` and keep `frontend/vercel.json` — then copy `api/` to repo root anyway, or use only `VITE_API_BASE_URL` (Option A).
 
 ### Frontend env (Vercel)
-Add **one** env var:
-- `VITE_API_BASE_URL=https://YOUR_BACKEND_DOMAIN`
+
+**Option A — Browser calls backend directly**
+- `VITE_API_BASE_URL=https://YOUR_BACKEND_DOMAIN` (no trailing slash)
 
 Example:
 - `VITE_API_BASE_URL=https://wsender.ecommerco.ai`
+
+**Option B — Same-origin `/api` on Vercel (proxy)**
+- Do **not** set `VITE_API_BASE_URL` (build must resolve requests to `/api/...`).
+- Set `BACKEND_URL=https://YOUR_BACKEND_DOMAIN` (origin only, no `/api` suffix).
+- The serverless route `api/[...path].js` at the **repository root** forwards to your backend. Stripe webhooks must still target the backend URL directly, not Vercel.
 
 ## 2) Backend hosting (required)
 WhatsApp sending cannot run reliably on Vercel serverless. Run the backend on:
