@@ -1,15 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../lib/api.js'
 import { Card } from '../components/Card.jsx'
 import { Button } from '../components/Button.jsx'
 import { Badge } from '../components/Badge.jsx'
+import { VoiceRecorder } from '../components/VoiceRecorder.jsx'
 
 export function Campaigns() {
   const [campaignIdea, setCampaignIdea] = useState('')
   const [productDescription, setProductDescription] = useState('')
   const [promotionDetails, setPromotionDetails] = useState('')
   const [media, setMedia] = useState(null)
+  const [recorderKey, setRecorderKey] = useState(0)
+  const fileInputRef = useRef(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
@@ -39,6 +42,8 @@ export function Campaigns() {
       setProductDescription('')
       setPromotionDetails('')
       setMedia(null)
+      setRecorderKey((k) => k + 1)
+      if (fileInputRef.current) fileInputRef.current.value = ''
       await load()
     } catch (e) {
       setError(e.message)
@@ -97,13 +102,27 @@ export function Campaigns() {
           <label className="field">
             <div className="field-label">Media (optional)</div>
             <input
+              ref={fileInputRef}
               className="file"
               type="file"
-              accept="image/*,video/*,application/pdf"
-              onChange={(e) => setMedia(e.target.files?.[0] || null)}
+              accept="image/*,video/*,audio/*,application/pdf"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null
+                setMedia(f)
+                if (f) setRecorderKey((k) => k + 1)
+              }}
             />
             <div className="field-hint">Send media + AI caption as the message.</div>
           </label>
+
+          <VoiceRecorder
+            key={recorderKey}
+            disabled={busy}
+            onRecorded={(file) => {
+              setMedia(file)
+              if (file && fileInputRef.current) fileInputRef.current.value = ''
+            }}
+          />
         </div>
 
         {error && <div className="callout callout-danger">{error}</div>}

@@ -41,6 +41,7 @@ function mediaKindFromMime(mimeType) {
   if (!mimeType) return null;
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";
+  if (mimeType.startsWith("audio/")) return "audio";
   if (mimeType === "application/pdf") return "pdf";
   return null;
 }
@@ -80,7 +81,7 @@ router.post("/", requireAuth, upload.single("media"), async (req, res) => {
   let media = undefined;
   if (req.file) {
     const kind = mediaKindFromMime(req.file.mimetype);
-    if (!kind) return res.status(400).json({ error: "Unsupported media type (image/video/pdf)" });
+    if (!kind) return res.status(400).json({ error: "Unsupported media type (image/video/audio/pdf)" });
     media = {
       kind,
       originalName: req.file.originalname,
