@@ -6,7 +6,7 @@ This repository contains:
 
 ## Run live (production)
 
-Step-by-step: **[RUN_LIVE.md](./RUN_LIVE.md)** (Vercel + Render + Supabase).
+Step-by-step: **[RUN_LIVE.md](./RUN_LIVE.md)** — **Vercel = UI only**; API runs on **your** Node host (VPS, Railway, Render, etc.) + PostgreSQL (e.g. Supabase).
 
 ## Local run (recommended Node version)
 - Node 20 (see `.nvmrc`)

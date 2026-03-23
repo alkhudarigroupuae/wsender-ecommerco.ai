@@ -1,9 +1,9 @@
 # Vercel Publishing + Database (Production)
 
 This project needs:
-- Frontend hosting (Vercel is great)
-- A long-running backend server (VPS/Render) for WhatsApp sessions + queue worker
-- PostgreSQL database (Supabase / Neon / Vercel Postgres)
+- **Frontend on Vercel** (this folder)
+- **A long-running backend** elsewhere (VPS, Railway, Fly.io, Render, etc.) — **not** Vercel serverless — for WhatsApp + queue + API
+- **PostgreSQL** (Supabase / Neon / etc.)
 
 ## 1) Deploy frontend on Vercel
 1) Vercel → New Project → Import GitHub repo
