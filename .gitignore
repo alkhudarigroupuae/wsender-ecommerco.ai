@@ -24,3 +24,4 @@ out/
 
 # Nested duplicate checkout (has its own .git); do not track
 wsender/
+.vercel

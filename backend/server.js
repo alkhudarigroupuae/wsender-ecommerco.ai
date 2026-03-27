@@ -6,6 +6,7 @@ const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
 const dotenv = require("dotenv");
+dotenv.config();
 
 const healthRoutes = require("./routes/health");
 const authRoutes = require("./routes/auth");
@@ -21,8 +22,6 @@ const adminRoutes = require("./routes/admin");
 const { startQueueWorker } = require("./services/queueWorker");
 const { query } = require("./db/pool");
 const { getAppConfig } = require("./services/config");
-
-dotenv.config();
 
 const PORT = Number(process.env.PORT || 4000);
 
